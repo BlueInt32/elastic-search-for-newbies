@@ -1,6 +1,12 @@
 #Elasticsearch Basics
 
-Elasticsearch (ES) is a kind of NoSQL database engine that focuses on full-text search.
+Elasticsearch (ES) is a kind of NoSQL distributed full-text database engine. It is designed to store data as **Documents**. It is based on Lucene (written in Java) and exposes an API layer.
+The key features of ES are :
+* Speed
+* Search relevancy
+* Statistical analysis tools
+
+ES is better used with systems that need a lot of search or analysis.
 
 ## Setting Up
 - Java
@@ -11,7 +17,7 @@ Elasticsearch (ES) is a kind of NoSQL database engine that focuses on full-text 
 ## Nodes and Clusters
 A **Node** is a physical server on which elastic search is installed. It is created with the installation of ES on the computer.
 
-A **Cluster** is a group of **Nodes**.
+A **Cluster** is a group of **Nodes**, with **Shards** distributed among them equally.
 
 By default, ES uses the TCP port 9200 and exposes an API on it.
 
@@ -58,7 +64,7 @@ The **Index** can be deleted like so
         DELETE my_blog  
 
 ## Shards
-A **Shard** is a logical subdivision of the **Index**. It is managed by ES, giving it its speed. If a **Cluster** has several **Nodes**, an **Index** will have its **Shards** spread equally on all the **Nodes** to maximize the power of parallellism. 
+A **Shard** is a logical subdivision of the **Index**. It is managed automatically by ES. If a **Cluster** has several **Nodes**, an **Index** will have its **Shards** spread equally on all the **Nodes** to maximize the power of parallellism. 
 An index can be given a setting about its number of shards during its creation. 
 
         POST my_blog
@@ -152,6 +158,51 @@ A **Property** of datatype date can be given a specific format, leading to error
           "type":"date",
           "format":"YYYY-MM-DD"
         }
-### Specifying storage of Properties
-ES is often used simultaneously with other database engines to provide search functionality on its side. By default, ES will store all the data defined in the mapping, but this can lead to a lot of redundancy. We can tell ES to disable the storage by default, and chose which property to store to reduce the memory allocated by the index.
-   
+### Specifying Property Storage behaviour
+ES is often used simultaneously with other database engines to provide search functionality on its side. By default, ES will store all the data defined in the mapping, but this can lead to a lot of redundancy. We can tell ES to disable the storage by default and chose which property to store to reduce the memory allocated by the index at the **Type** level :
+
+        POST my_blog
+        {
+          "mappings":{
+            "post":{
+              "_source":{
+                "enabled":false
+              },
+              "properties":{
+                "user_id":{
+                  "type":"integer",
+                  "store":true
+                },
+                ...
+              }
+            }
+          }
+        }
+This setting is useful especially when disk space is a real concern, but it makes documents trickier to retrieve and debug.
+
+### The _all setting
+By default, ES stores an additional property containing all the data from the properties, in our case "user_id", "user_text" and "user_date". This can be disabled to decrease the size of the index using the following setting, at the **Type** level like the storage setting :
+
+        POST my_blog
+        {
+          "mappings":{
+            "post":{
+              "_all":{
+                "enabled":false
+              },
+              "properties":{
+                ...
+              }
+            }
+          }
+        }
+
+## Routing and Aliases
+
+## Querying
+
+### Simple Query
+
+### Query DSL
+
+
